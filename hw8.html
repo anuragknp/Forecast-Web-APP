@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Homework 8</title>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+        <!-- jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        
+        <script src="http://cdn.jsdelivr.net/jquery.validation/1.14.0/jquery.validate.js"></script>
+
+        <!-- Latest compiled JavaScript -->
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src="http://openlayers.org/api/OpenLayers.js"></script>
+        <style>
+            .headerh1 {
+                text-align: center;
+                margin: 0px;
+                border-bottom: 0px;
+                color:rgb(60,60,60);
+            }
+            html {
+                min-height: 100%;
+                background: url(http://cs-server.usc.edu:45678/hw/hw8/images/bg.jpg) center fixed;
+                -webkit-background-size:cover;
+                -moz-background-size:cover;
+                -o-background-size:cover;
+                background-size:cover;
+                background-repeat: no-repeat;
+            }
+            body {
+                background-color: rgba(100, 100, 100, 0.0);
+                color: white;
+                font-family: "Arial";
+            }
+            div.error {
+                color: red;
+            }
+            .nav-tabs > li.active > a,
+            .nav-tabs > li.active > a:hover,
+            .nav-tabs > li.active > a:focus{
+                color: white;
+                background-color: #3071A9;  
+            } 
+            .nav-tabs > li > a,
+            .nav-tabs > li > a:hover,
+            .nav-tabs > li > a:focus{
+                color: rgb(51,122,182);
+                background-color: rgb(238,238,238);  
+            } 
+            .week-tab {
+                background-color:rgb(20,20,20)
+            }
+            .single-week {
+                border-radius:6px;
+                margin-top:12px;
+                margin-bottom:12px;
+                text-align: center;
+                font-weight: bold;
+                margin-left:6px;
+                margin-right:6px;
+                padding-left: 5px; 
+                padding-right: 5px;
+            }
+            
+            .modalcolor0 {
+                background-color: #367DA5;
+            }
+            
+            .modalcolor1 {
+                background-color: #EC4455;
+            }
+            
+            .modalcolor2 {
+                background-color: #E68E5F;
+            }
+            
+            .modalcolor3 {
+                background-color: #A7A539;
+            }
+            
+            .modalcolor4 {
+                background-color: #9771A7;
+            }
+            
+            .modalcolor5 {
+                background-color: #F37C8E;
+            }
+            
+            .modalcolor6 {
+                background-color: #CE4572;
+            }
+            
+            .tab2header td {
+                width: 20%;
+            }
+            
+            .tab2data td {
+                width: 25%;
+            }
+            
+            .tabfont {
+                font-size: 14px;
+            }
+            
+            #cloudmap {
+                background-color: white;
+                height: 457px;
+            }
+            
+            @media (min-width: 320px) and (max-width: 768px) {
+                .tabfont, tr, td, table {
+                    font-size: 11px;
+                }
+                label, p, div {
+                    font-size: 12px;
+                }
+                h3 {
+                    font-size: 16px;
+                }
+                h4 {
+                    font-size: 15px;
+                }
+                .week-tab {
+                    background-color:rgba(20,20,20, 0.1)
+                }
+                .single-week {
+                    border-radius:20px;
+                }
+            }
+            
+            @media (min-width: 768px) and (max-width: 990px) {
+                .tabfont, tr, td, table  {
+                    font-size: 11px;
+                }
+                div, label {
+                    font-size: 12px;
+                }
+                p {
+                    font-size: 8px;
+                }
+                h3 {
+                    font-size: 17px;
+                }
+                h4 {
+                    font-size: 18px;
+                }
+                .single-week {
+                    border-radius:10px;
+                }
+                #cloudmap {
+                    height: 440px;
+                }
+            }
+            
+             @media (min-width: 990px) and (max-width: 1200px) {
+                 p {
+                    font-size: 11px;
+                }
+                #cloudmap {
+                    height: 455px;
+                }
+             }
+            
+            
+        </style>
+    </head>
+    <body>
+        
+        <div class="container">
+            <div class="page-header headerh1">
+                <h1 style="font-weight:bolder;">Forecast Search</h1>
+            </div>
+            <div class="container-fluid" style="background-color:rgba(100, 100, 100, 0.33); padding:10px;">
+                <form id="forecast_form" class="form-inline">
+                    <div class="form-group" style="vertical-align:top;">
+                        <label for="street">Street Address:</label><span style="color:red;">*</span><br />
+                        <input type="text" class="form-control form-input" size=25 id="street" name="street" placeholder="Enter street address" required>
+                    </div>
+                    
+                    <div class="form-group" style="vertical-align:top;">
+                        <label for="city">City:</label><span style="color:red;">*</span><br />
+                        <input type="text" class="form-control" size=15 id="city" name="city" placeholder="Enter the city name" required>
+                    </div>
+                    
+                    <div class="form-group" style="vertical-align:top;">
+                        <label for="state">State:</label><span style="color:red;">*</span><br />
+                        <select id="state" name="state" class="form-control">
+                            <option value="">Select your state...</option>
+                            <option value="AL">Alabama</option>
+                            <option value="AK">Alaska</option>
+                            <option value="AZ">Arizona</option>
+                            <option value="AR">Arkansas</option>
+                            <option value="CA">California</option>
+                            <option value="CO">Colorado</option>
+                            <option value="CT">Connecticut</option>
+                            <option value="DE">Delaware</option>
+                            <option value="DC">District Of Columbia</option>
+                            <option value="FL">Florida</option>
+                            <option value="GA">Georgia</option>
+                            <option value="HI">Hawaii</option>
+                            <option value="ID">Idaho</option>
+                            <option value="IL">Illinois</option>
+                            <option value="IN">Indiana</option>
+                            <option value="IA">Iowa</option>
+                            <option value="KS">Kansas</option>
+                            <option value="KY">Kentucky</option>
+                            <option value="LA">Louisiana</option>
+                            <option value="ME">Maine</option>
+                            <option value="MD">Maryland</option>
+                            <option value="MA">Massachusetts</option>
+                            <option value="MI">Michigan</option>
+                            <option value="MN">Minnesota</option>
+                            <option value="MS">Mississippi</option>
+                            <option value="MO">Missouri</option>
+                            <option value="MT">Montana</option>
+                            <option value="NE">Nebraska</option>
+                            <option value="NV">Nevada</option>
+                            <option value="NH">New Hampshire</option>
+                            <option value="NJ">New Jersey</option>
+                            <option value="NM">New Mexico</option>
+                            <option value="NY">New York</option>
+                            <option value="NC">North Carolina</option>
+                            <option value="ND">North Dakota</option>
+                            <option value="OH">Ohio</option>
+                            <option value="OK">Oklahoma</option>
+                            <option value="OR">Oregon</option>
+                            <option value="PA">Pennsylvania</option>
+                            <option value="RI">Rhode Island</option>
+                            <option value="SC">South Carolina</option>
+                            <option value="SD">South Dakota</option>
+                            <option value="TN">Tennessee</option>
+                            <option value="TX">Texas</option>
+                            <option value="UT">Utah</option>
+                            <option value="VT">Vermont</option>
+                            <option value="VA">Virginia</option>
+                            <option value="WA">Washington</option>
+                            <option value="WV">West Virginia</option>
+                            <option value="WI">Wisconsin</option>
+                            <option value="WY">Wyoming</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="vertical-align:top;">
+                        <label style="margin-bottom:10px;" for="degree">Degree:</label><span style="color:red;">*</span><br />
+                        <label><input type="radio" name="degree" value="us" checked> Fahrenheit</label>
+                        <label><input type="radio" name="degree" value="si"> Celsius</label>
+                    </div>
+                    <div class="form-group pull-right">
+                        <br/>
+                        <button id="searchbtn" type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span> Search</button>
+                        <button id="clearbtn" type="reset" class="btn btn-secondary" style="color:rgb(60,60,60);"><span class="glyphicon glyphicon-refresh"></span> Clear</button><br />
+                        <span>Powered by:
+                            <a href="http://forecast.io" target="_blank"><img class="img-responsive" style="display:inline;height:60px;width:90px;" src="http://cs-server.usc.edu:45678/hw/hw8/images/forecast_logo.png"></a></span>
+                    </div>
+                </form>
+            </div>
+            <hr>
+            <div class="container-fluid" id="result" style="padding-left: 0px; padding-right: 0px;">
+            </div>
+            <div id="footer">
+                &nbsp;
+            </div>
+        </div>
+    </body>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '363537433698763',
+          xfbml      : true,
+          version    : 'v2.5'
+        });
+      };
+
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <script type="application/javascript">
+            var forecast = "";
+            var display_result = false;
+            
+            function postOnFb() {
+                var body = 'testing';
+                FB.ui({
+                    method: 'feed',
+                    display: 'popup',
+                    caption: 'WEATHER INFORMATION FROM FORCAST.IO',
+                    description: get_summary()+', '+get_temperature()+'&deg;'+get_degree_unit(),
+                    link: 'http://forecast.io',
+                    picture: get_icon_link(forecast.currently.icon),
+                    name: 'Current Weather in ' + get_city() + ', ' + get_state()
+                }, 
+                function(response){
+                    if(response && response.post_id) {
+                        alert("Posted Successfully");
+                    } else {
+                        alert("Not Posted");
+                    }});
+            }
+            
+            function clear_form(form) {
+                form.street.value="";
+                form.city.value="";
+                form.state.selectedIndex=0;
+                form.degree[0].checked = true;
+                form.degree[1].checked = false;
+                $("#result").html('');
+                display_result = false;
+            }
+            
+            function get_icon_link(name) {
+                if (name == undefined) {
+                    return 'N.A';
+                }
+                icons = {"clear-day":"clear.png", "clear-night":"clear_night.png", "rain":"rain.png",
+                           "snow":"snow.png", "sleet":"sleet.png",  "wind":"wind.png", "fog":"fog.png",
+                           "cloudy":"cloudy.png", "partly-cloudy-day":"cloud_day.png", "partly-cloudy-night":"cloud_night.png", "storm":"Storm.png"};
+
+                return 'http://cs-server.usc.edu:45678/hw/hw8/images/'+icons[name];
+            }
+            
+            function get_summary() {
+                return forecast.currently.summary;
+            }
+            
+            function get_city() {
+                return $("#city").val();
+            }
+            
+            function get_state() {
+                return $("#state").val();
+            }
+            
+            function get_degree() {
+                if ($("[name=degree]")[0].checked) {
+                    return 'us';
+                } else {
+                    return 'si';
+                }
+            }
+            
+            function get_degree_unit() {
+                if (get_degree() == 'us') {
+                    return "F";
+                } else {
+                    return "C";
+                }
+            }
+            
+            function get_temperature() {
+                try {
+                    if (forecast.currently.temperature == undefined) {
+                        return 'N.A';
+                    }
+                    return parseInt(forecast.currently.temperature);
+                } catch(e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_low_temp() {
+                try {
+                    if (forecast.daily.data[0].temperatureMin == undefined) {
+                        return 'N.A';
+                    }
+                    return parseInt(forecast.daily.data[0].temperatureMin)
+                } catch(e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_high_temp() {
+                try {
+                    if (forecast.daily.data[0].temperatureMax == undefined) {
+                        return 'N.A';
+                    }
+                    return parseInt(forecast.daily.data[0].temperatureMax)
+                } catch(e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_precipitation(precipitation) {
+                try {
+                    if (precipitation == undefined) {
+                        return 'N.A';
+                    }
+                    if (get_degree() == 'si') {
+                        precipitation = precipitation/25.4;
+                    }
+                    if (precipitation < 0.002) {
+                        return "None";
+                    } else if (precipitation < 0.017) {
+                        return "Very Light";
+                    } else if (precipitation < 0.1) {
+                        return "Light";
+                    } else if (precipitation < 0.4) {
+                        return "Moderate";
+                    } else {
+                        return "Heavy";
+                    }
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+                        
+            function get_precipProbability() {
+                try {
+                    if (forecast.currently.precipProbability == undefined) {
+                        return 'N.A';
+                    }
+                    return Math.round(forecast.currently.precipProbability*100)+'%';
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+
+            function get_windspeed(w) {
+                try {
+                    if (w == undefined) {
+                        return 'N.A';
+                    }
+                    if (get_degree() == 'si') {
+                        return w.toFixed(2) +' mpsec';
+                    } else {
+                        return w.toFixed(2) +' mph';
+                    }
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_dewpoint() {
+                try {
+                    if (forecast.currently.dewPoint == undefined) {
+                        return 'N.A';
+                    }
+                    return Math.round(forecast.currently.dewPoint)+'&deg;&nbsp;'+get_degree_unit();
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_humidity(h) {
+                try {
+                    if (h == undefined) {
+                        return 'N.A';
+                    }
+                    return Math.round(h*100)+'%';
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_pressure(p) {
+                try {
+                    if (p == undefined) {
+                        return 'N.A';
+                    }
+                    if (get_degree() == 'si') {
+                        return p +' hPa';
+                    } else {
+                        return p+' mb';
+                    }
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_day(time) {
+                try {
+                    if (time == undefined) {
+                        return 'N.A';
+                    }
+                    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    var d = new Date(time*1000);
+                    return days[d.getDay()]
+                } catch(e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_date(time) {
+                try {
+                    if (time == undefined) {
+                        return 'N.A';
+                    }
+                    var date = new Date(time*1000);
+                    var month_name = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                    var month = month_name[date.getMonth()]; 
+                    var day = date.getDate();
+                    return month+" "+day;
+                } catch(e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_visibility(v) {
+                try {
+                    if (v == undefined) {
+                        return 'N.A';
+                    }
+                    if (get_degree() == 'si') {
+                        return Math.round(v)+' kms';
+                    } else {
+                        return Math.round(v)+' mi';
+                    }
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function get_sunrise() {
+                try {
+                    if (forecast.daily.data[0].sunriseTime == undefined) {
+                        return 'N.A';
+                    }
+                    return forecast.daily.data[0].sunriseTime;
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+    
+            function get_sunset() {
+                try {
+                    if (forecast.daily.data[0].sunsetTime == undefined) {
+                        return 'N.A';
+                    }
+                    return forecast.daily.data[0].sunsetTime;
+                } catch (e) {
+                    return 'N.A';
+                }
+            }
+            
+            function opencloudmap(latitude, longitude){
+                try {
+                    var position = new OpenLayers.LonLat(longitude, latitude).transform( new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+                    var map = new OpenLayers.Map("cloudmap");
+
+                    var m = new OpenLayers.Layer.OSM();
+                    var c = new OpenLayers.Layer.XYZ(
+                            "clouds",
+                            "http://${s}.tile.openweathermap.org/map/clouds/${z}/${x}/${y}.png",
+                            {
+                                isBaseLayer: false,
+                                opacity: 0.3,
+                                sphericalMercator: true
+                            }
+                        );
+
+                    var p = new OpenLayers.Layer.XYZ(
+                            "precipitation",
+                            "http://${s}.tile.openweathermap.org/map/precipitation/${z}/${x}/${y}.png",
+                            {
+                                isBaseLayer: false,
+                                opacity: 0.3,
+                                sphericalMercator: true
+                            }
+                        );
+
+                    map.addLayers([m, c, p]);
+                    map.setCenter( position, 10 );
+                } catch(e) {
+                    $("#cloudmap").text("map unavailable");
+                }
+            }
+        
+            function createTabTwo(i) {
+                return '<table class="table table-responsive tab2header" style="text-align:center;">\
+		    				  <tr><td>'+forecast.hourly.data[i].time+'</td>\
+		    					<td><img src="'+get_icon_link(forecast.hourly.data[i].icon)+'" width="50" height="40"></td>\
+		    					<td>'+Math.round(forecast.hourly.data[i].cloudCover*100)+'%</td>\
+		    					<td>'+forecast.hourly.data[i].temperature+'</td>\
+		    					<td>\
+                                    <a data-toggle="collapse" aria-expanded="true" aria-controls="hour'+i+'" href="#hour'+i+'">\
+                                    <span class="glyphicon glyphicon-plus"></span></a></td>\
+		    				  </tr>\
+				    	     </table>\
+                            <div id="hour'+i+'" class="collapse" role="tabpanel" aria-expanded="true">\
+                             <div class="well">\
+		                      <div style="margin:auto;">\
+			                   <table class="table table-responsive tab2data" style="text-align:center;">\
+				                <tr style="font-size:16px;background-color:white;">\
+                                 <td>Wind</td>\
+                                 <td>Humidity</td>\
+                                 <td>Visibility</td>\
+                                 <td>Pressure</td>\
+				                </tr>\
+                                <tr>\
+                                 <td>'+get_windspeed(forecast.hourly.data[i].windSpeed)+'</td>\
+                                 <td>'+get_humidity(forecast.hourly.data[i].humidity)+'</td>\
+                                 <td>'+get_visibility(forecast.hourly.data[i].visibility)+'</td>\
+                                 <td>'+get_pressure(forecast.hourly.data[i].pressure)+'</td>\
+                                </tr>\
+                               </table>\
+                              </div>\
+                             </div>\
+                            </div>';
+            }
+        
+            function createTabThree(i) {
+                
+                return '<div class=" col-sm-1 single-week modalcolor'+i+'" data-toggle="modal" data-target="#modal'+i+'">\
+                                <p>'+get_day(forecast.daily.data[(i+1)%8].time)+'</p>\
+                                <p>'+get_date(forecast.daily.data[(i+1)%8].time)+'</p>\
+                                <center>\
+                                 <img class="img-responsive" src="'+get_icon_link(forecast.daily.data[(i+1)%8].icon)+'" width="67" height="61"\
+                                    title="'+forecast.daily.data[(i+1)%8].summary+'">\                                           </center>\
+                                <p>Min<br>Temp</p>\
+                                <p style="font-size:33px">'+parseInt(forecast.daily.data[(i+1)%8].temperatureMin)+'&deg;</p>\
+                                <p>Max<br>Temp</p>\
+                                <p style="font-size:33px">'+parseInt(forecast.daily.data[(i+1)%8].temperatureMax)+'&deg;</p>\
+                              </div>\
+                              <div class="modal fade" id="modal'+i+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">\
+                               <div class="modal-dialog" role="document">\
+                                <div class="modal-content" style="text-align:center;color:black;">\
+                                 <div class="modal-header">\
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
+                                    <span aria-hidden="true">&times;</span></button>\
+                                    <h4 style="text-align:left;">Weather in '+get_city()+' on '+get_day(forecast.daily.data[(i+1)%8].time)+'</h4>\
+                                 </div>\
+                                 <div class="modal-body">\
+                                  <div style="text-align:center;">\
+                                   <center><img class="img-responsive" style="align:center;" src="'+get_icon_link(forecast.daily.data[(i+1)%8].icon)+'"\
+                                        width="160" height="130" title="'+forecast.daily.data[(i+1)%8].summary+'"></center><br>\
+                                    <h3>'+get_day(forecast.daily.data[(i+1)%8].time)+': \
+                                        <font color="orange">'+forecast.daily.data[(i+1)%8].summary+'</font></h3>\
+                                    </div>\
+                                    <div class="row" style="text-align:center;">\
+                                        <div class="col-sm-4"><h4>Sunrise Time </h4>'+forecast.daily.data[(i+1)%8].sunriseTime+'</div>\
+                                        <div class="col-sm-4"><h4>Sunset Time </h4>'+forecast.daily.data[(i+1)%8].sunsetTime+'</div>\
+                                        <div class="col-sm-4"><h4>Humidity </h4>'+get_humidity(forecast.daily.data[(i+1)%8].humidity)+'</div>\
+                                        <div class="col-sm-4"><h4>Wind Speed </h4>'+get_windspeed(forecast.daily.data[(i+1)%8].windSpeed)+'</div>\
+                                        <div class="col-sm-4"><h4>Visibility </h4>'+get_visibility(forecast.daily.data[(i+1)%8].visibility)+'</div>\
+                                        <div class="col-sm-4"><h4>Pressure </h4>'+get_pressure(forecast.daily.data[(i+1)%8].pressure)+'</div>\
+                                    </div>\
+                                </div>\
+                               <div class="modal-footer">\
+                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
+                               </div>\
+                            </div>\
+                        </div>\
+                    </div>';
+            }
+
+            function displayResult() {
+                html = '<ul class="nav nav-tabs tabfont" role="tablist">\
+                        <li role="presentation" class="active"><a href="#now" aria-controls="now" role="tab" data-toggle="tab">Right Now</a></li>\
+                        <li role="presentation"><a href="#day" aria-controls="day" role="tab" data-toggle="tab">Next 24 Hours</a></li>\
+                        <li role="presentation"><a href="#week" aria-controls="week" role="tab" data-toggle="tab">Next 7 Days</a></li>\
+                        </ul>\
+                        <div class="tab-content">\
+                         <div role="tabpanel" class="tab-pane fade active in" id="now">\
+                          <div class="row" style="margin:0px">\
+                           <div class="col-sm-6" style="padding:0px;">\
+                            <div class="col-sm-12" style="background-color: rgb(242,126,127);">\
+                             <div class="col-sm-6">\
+                              <img class="img-responsive" style="width:160px;height:160px;align:center;margin:auto;padding: 15px 5px 5px;" title="' + get_summary() + '" src="' + get_icon_link(forecast.currently.icon) + '">\
+                             </div>\
+                             <div class="col-sm-6" style="background-color: rgb(242,126,127);padding-right: 0px; padding-left: 0px;">\
+                              <div style="text-align:center;font-weight:bold;font-size:17px">'+get_summary()+' in '+get_city()+', '+get_state()+'</div>\
+                               <div style="text-align:center;">\
+                                <span  style="text-align:center;font-size:70px;">'+get_temperature()+'</span>\
+                                <span style="vertical-align:174%">&deg; '+get_degree_unit()+'</span>\
+                                <div style="color:black;padding-bottom:10px;">\
+                                 <span style="color:blue;">L: '+get_low_temp()+'&deg;</span> | \
+                                 <span style="color:green;">H: '+get_high_temp()+'&deg;</span>\
+                                 <span style="float:right;margin-top:-20px;"><a href="javascript:postOnFb()"><img src="http://cs-server.usc.edu:45678/hw/hw8/images/fb_icon.png" width="35" height="35"></a></span>\
+                                </div>\
+                              </div>\
+                             </div>\
+                            </div>\
+                           <table class="table table-striped table-responsive" style="color:black;padding:0px;">\
+                            <tr><td>Precipitation</td><td>'+get_precipitation(forecast.currently.precipIntensity)+'</td></tr>\
+                            <tr class="danger"><td>Chance of rain</td><td>'+get_precipProbability()+'</td></tr>\
+                            <tr><td>Wind Speed</td><td>'+get_windspeed(forecast.currently.windSpeed)+'</td></tr>\
+                            <tr class="danger"><td>Dew Point</td><td>'+get_dewpoint()+'</td></tr>\
+                            <tr><td>Humidity</td><td>'+get_humidity(forecast.currently.humidity)+'</td></tr>\
+                            <tr class="danger"><td>Visibility</td><td>'+get_visibility(forecast.currently.visibility)+'</td></tr>\
+                            <tr><td>Sunrise</td><td>'+get_sunrise()+'</td></tr>\
+                            <tr class="danger"><td>Sunset</td><td>'+get_sunset()+'</td></tr>\
+                           </table>\
+                          </div>\
+                         <div class="col-sm-6" style="padding:0px;">\
+				    	  <div id="cloudmap"></div>\
+				         </div>\
+                         </div>\
+                         </div>\
+                          <div role="tabpanel" class="tab-pane fade in" id="day">\
+                           <div class="row" style="text-align: center; margin-left: 0px; margin-right: 0px;background-color:#ffffff;color:black;">\
+                            <div class="col-sm-12"  style="padding-left: 0px; padding-right: 0px;">\
+                            <table class="table table-responsive tab2header" style="margin-bottom:0px;background-color:#255681;color:white;font-weight:bold;">\
+                             <tr>\
+                              <td>Time</td>\
+                              <td>Summary</td>\
+                              <td>Cloud Cover</td>\
+                              <td>Temp(&deg;'+get_degree_unit()+')</td>\
+                              <td>View Details</td></tr>\
+                            </table>';
+                           
+                  for(var i = 0; i < forecast.hourly.data.length; i++) {
+		    		html += createTabTwo(i);
+				  }
+                
+                  html += '</div></div></div>\
+                           <div role="tabpanel" class="tab-pane  fade in" id="week">\
+                            <div class="row week-tab" style="margin-left: 0px; margin-right: 0px;">\
+                             <div class="col-sm-1"></div>\
+                             <div class="col-sm-1"></div>';
+                
+                for(var i = 0; i < 7; i++){
+                    html += createTabThree(i);
+                }
+                
+                html += '</div></div>';
+
+                  $("#result").html(html);
+                  opencloudmap(forecast.latitude, forecast.longitude);
+            }
+            
+            function get_full_statename() {
+                states = {"AL":"Alabama", "AK":"Alaska", "AZ":"Arizona", "AR":"Arkansas", "CA":"California", "CO":"Colorado", "CT":"Connecticut",           "DE":"Delaware", "DC":"District Of Columbia", "FL":"Florida", "GA":"Georgia", "HI":"Hawaii", "ID":"Idaho", "IL":"Illinois", "IN":"Indiana", "IA":"Iowa", "KS":"Kansas", "KY":"Kentucky", "LA":"Louisiana", "ME":"Maine", "MD":"Maryland", "MA":"Massachusetts", "MI":"Michigan", "MN":"Minnesota", "MS":"Mississippi", "MO":"Missouri", "MT":"Montana", "NE":"Nebraska", "NV":"Nevada", "NH":"New Hampshire", "NJ":"New Jersey", "NM":"New Mexico", "NY":"New York", "NC":"North Carolina", "ND":"North Dakota", "OH":"Ohio", "OK":"Oklahoma", "OR":"Oregon", "PA":"Pennsylvania", "RI":"Rhode Island", "SC":"South Carolina", "SD":"South Dakota", "TN":"Tennessee", "TX":"Texas", "UT":"Utah", "VT":"Vermont", "VA":"Virginia", "WA":"Washington", "WV":"West Virginia", "WI":"Wisconsin", "WY":"Wyoming"};
+                return states[$("#state")[0].value];
+            }
+        
+            function makeRequest() {
+                if (!$("#forecast_form").valid()) {
+                    return;
+                }
+                $.ajax({url: "http://forecast-hw8.elasticbeanstalk.com/index.php", 
+                        data: { 
+                               "street": $("#street")[0].value, 
+                               "city": $("#city")[0].value, 
+                               "state": get_full_statename(),
+                               "degree": get_degree()
+                              },
+                        error: function(req, textStatus, e) {
+                            alert(textStatus, e);
+                        },
+                        success: function(result){
+                            forecast = result;
+                            if (display_result) {
+                                displayResult();
+                            }
+                        }
+                });
+            }
+            
+            $(document).ready(function() {
+                validator = $("#forecast_form").validate({rules: {
+                    street: "required",
+                    city: "required",
+                    state: "required"
+                  },
+                  messages: {
+                      street: "Please enter the street address",
+                      city: "Please enter the city",
+                      state: "Please select a state"
+                  },
+                  errorElement: "div",
+                  submitHandler: function(form) {
+                    display_result = true;
+                    makeRequest();
+                  }});
+            
+               $("#clearbtn").click(function() {
+                   clear_form($("#forecast_form")[0])
+                   if (validator) {
+                        validator.resetForm();
+                   }
+                });
+            });
+        </script>
+</html>
