@@ -36,7 +36,7 @@ function set_hourly_time() {
 
 function getForecast($street, $city, $state, $degree) {
     try {
-        $queryParams = array('address'=>$street.','.$city.','.$state, 'key'=>'AIzaSyAJCGaVJQt8bZTtcGyoap3_vxcr8L3TfVg');
+        $queryParams = array('address'=>$street.','.$city.','.$state, 'key'=>'XXXXXXXX');
         $url = 'https://maps.google.com/maps/api/geocode/xml?'.http_build_query($queryParams);
         $xmlResponse = @file_get_contents($url);
         if ($xmlResponse === FALSE) {
@@ -52,7 +52,7 @@ function getForecast($street, $city, $state, $degree) {
         $location = $geocodeResponse->result[0]->geometry->location;
         $lat = $location->lat;
         $long = $location->lng;
-        $forecast_api_url = 'https://api.forecast.io/forecast/d033d0210cc294f0267b394c37765241/'.$lat.','.$long.'?units='.$degree.'&exclude=flags';
+        $forecast_api_url = 'https://api.forecast.io/forecast/XXXXXXXX/'.$lat.','.$long.'?units='.$degree.'&exclude=flags';
         global $forecast;
         $jsonResponse = @file_get_contents($forecast_api_url);
         if ($jsonResponse === FALSE) {
